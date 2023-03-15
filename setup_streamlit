@@ -1,0 +1,59 @@
+import streamlit as st
+import pandas as pd
+import folium
+import altair as alt
+
+st.set_page_config(page_title="SETUP Projects", page_icon=":smiley:")
+
+st.title("SETUP Projects")
+
+# Set Altair theme
+alt.themes.enable('default')
+
+# Load data from CSV
+DATA_URL = "/Users/RVA-ACER/Desktop/CARREN/COPY_DATABASE SETUP PROJECTS.xlsx - Sheet1.csv"
+data = pd.read_csv(DATA_URL)
+
+# Display the data
+st.markdown("## Database")
+st.write(data)
+
+# Create a button group for selecting province
+provinces = data['Province'].unique()
+selected_province = st.radio('Select a province', provinces)
+
+# Filter the data based on the selected province
+filtered_data = data.loc[data['Province'] == selected_province]
+
+# Display the filtered data
+st.markdown(f"## {selected_province}")
+st.write(filtered_data)
+
+# Create a bar chart of Gender based on the selected province
+gender_data = filtered_data['Gender'].value_counts().reset_index()
+gender_data.columns = ['Gender', 'Count']
+gender_chart = alt.Chart(gender_data).mark_bar().encode(
+    x=alt.X('Gender', axis=alt.Axis(labelAngle=0), title='Gender'),
+    y=alt.Y('Count', title='Count'),
+    color=alt.Color('Gender', legend=None),
+    tooltip=['Gender', 'Count']
+).properties(
+    title=f'Gender Distribution in {selected_province}'
+)
+
+# Display the chart with labels
+st.altair_chart(gender_chart, use_container_width=True)
+
+# Create a pie chart of 'Type of Enterprise' based on the selected province
+enterprise_data = filtered_data['Type of Enterprise'].value_counts().reset_index()
+enterprise_data.columns = ['Type of Enterprise', 'Count']
+enterprise_chart = alt.Chart(enterprise_data).mark_arc().encode(
+    theta='Count',
+    color=alt.Color('Type of Enterprise', legend=alt.Legend(title='Type of Enterprise')),
+    tooltip=['Type of Enterprise', 'Count']
+).properties(
+    title=f'Type of Enterprise in {selected_province}'
+)
+
+# Display the chart with labels
+st.altair_chart(enterprise_chart, use_container_width=True)
